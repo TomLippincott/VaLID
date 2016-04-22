@@ -1,0 +1,188 @@
+VaLID version 1.0 (derived from INVALID version 0.95)
+Paul McNamee (paul.mcnamee@jhuapl.edu)
+JHU HLTCOE - January 2013
+
+4/22/16: ported to standard Python package with various minor updates (Tom Lippincott)
+	 a fair amount of the original README (everything below this note) still applies
+1/23/13: added Java support
+6/3/13:  more langs, less memory, better efficiency
+
+TODO:
+* switch to 3-letter language codes (eng vs. en)
+
+# -----------------------------------------------------------------
+
+This software supports training 'compression language models' for an
+input text and supports k-way classification of different models.  The
+code specifically supports written language identification.  This code
+was used in experiments reported at the NAACL-HLT 2012 LSM-12 workshop.
+If you use this code in published work please cite the following paper:
+  http://aclweb.org/anthology-new/W/W12/W12-2108.pdf
+
+The code is hosted on GitLab.
+
+The repository also comes with ~260 trained models for LID. At present
+only order 4 models are released. These models were pruned from larger
+ones, which may be slightly more accurate, but come with increased
+memory footprint and load time.  Models are derived from news corpora
+and automatically curated Wikipedia texts. Note that the languages
+supported include dialects, so if you score against all languages, you
+may find predictions for both "ar" and "arz" (Arabic and Egyptian
+Arabic, respectively).  The current inventory of supported languages
+is:
+
+"ab:ace:af:ak:als:am:an:ang:ar:arc:arz:as:ast:av:ay:az:ba:bar:bcl:be:bg:bh:bi:bjn:bm:bn:bo:bpy:br:bs:bug:bxr:ca:cdo:ce:ceb:ch:chr:chy:ckb:co:cr:crh:cs:csb:cu:cv:cy:da:de:diq:dsb:dv:dz:ee:el:eml:en:eo:es:et:eu:ext:fa:ff:fi:fj:fo:fr:frp:frr:fur:fy:ga:gag:gan:gd:gl:glk:gn:got:gu:gv:ha:hak:haw:he:hi:hif:hr:hsb:ht:hu:hy:ia:id:ie:ig:ik:ilo:io:is:it:iu:ja:jbo:jv:ka:kaa:kab:kbd:kg:ki:kk:kl:km:kn:ko:koi:krc:ks:ku:kv:kw:ky:la:lad:lb:lbe:lez:lg:li:lij:lmo:ln:lo:lt:ltg:lv:mdf:mg:mhr:mi:mk:ml:mn:mo:mr:mrj:ms:mt:mwl:my:myv:mzn:na:nah:nap:nds:ne:new:nl:nn:no:nov:nso:nv:ny:oc:om:or:os:pa:pag:pam:pap:pcd:pdc:pfl:pi:pih:pl:pms:pnb:pnt:ps:pt:qu:rm:rmy:rn:ro:ru:rue:rw:sa:sah:sc:scn:sco:sd:se:sg:sh:si:sk:sl:sm:sn:so:sq:sr:srn:ss:st:stq:su:sv:sw:szl:ta:te:tet:tg:th:ti:tk:tl:tn:to:tpi:tr:ts:tt:tum:tw:ty:udm:ug:uk:ur:uz:ve:vec:vep:vi:vls:vo:wa:war:wo:wuu:xal:xh:xmf:yi:yo:za:zea:zh:zu"
+
+You can read about the ISO 639 codes for language identifiers at:
+  http://en.wikipedia.org/wiki/ISO_639
+  http://www.loc.gov/standards/iso639-2/php/code_list.php
+
+There are three basic operations one can perform:
+  (a) train a model given data
+  (b) classify a file where the lines of the file are scored (e.g., one tweet per line)
+  (c) classify input text programmatically, where the input text may be large
+
+Output scores are log prob values representing the likelihood of a
+model on an average character basis. Given an input in a writing
+system like Hebrew or Thai, it is very likely that "he" (Hebrew
+language) or "th" (Thai language) will be much more likely than other
+options.  However, given an input in the Roman alphabet, there will be
+many similarly scored languages as many languages are written in this
+alphabet - hopefully the correct one is in fact the top ranked.
+Accuracy is highest on longer inputs - a 120 character tweet is much
+easier to classify than a 20 character one.
+
+# -----------------------------------------------------------------
+# Python specifics
+
+(a) classification / training
+
+The coelid.py program assumes that the input is one-text (e.g., tweet)
+per line.  At present (and this _could_ someday change) it normally
+prepends 6 tab-separated columns indicating the top-three language
+predictions and their scores to a 7th column which is the input
+text. Languages are specified via ISO 639 (-1 or -2) codes.
+
+Input files are assumed to be UTF-8. (Note: the pre-trained models use
+lower-cased text, and coelid.py lower-cases its input unless the 5th
+argument is False.) To run the LID classifier from the distribution:
+  python coelid.py classify demo/bib.txt 4 pmodels/ True "en:es:fr"
+
+The output should be in line-to-line correspondance with the
+input. You can thus do stuff like "grep ^en output" to find English
+tweets/verses/lines.
+
+Usage:
+coelid.py train filename order prefix lang
+coelid.py classify filename order prefix normalize langs outstream
+
+Arguments:
+
+filename:    The file containing the training data (for train) or the
+             messages to classify (for classify).
+order:       The maximal of the model to use (e.g. 3 or 4 are typical)
+prefix:      A prefix for model filenames (used to build/run different models)
+lang:        The language code for the language to be trained
+normalize:   If True, then normalize tweets by lowercasing, removing hashtags etc.
+             before classifying them (default=True)
+langs:       The set of langauges that should be considered, specified as
+             a colon-delimited list of language codes (eg "en:es:fr"), or the
+             strings ALL or MAJOR for pre-determined subsets of languages
+outstream    The name of the output file.  If not specified, then write
+             output to stdout.
+
+Examples:
+  python coelid.py train ~/langid/ar/ar.all 4 "" ar
+  python coelid.py classify foo2.txt 4 pmodels/ True en:es:fr
+
+Note: loading all of the released order 4 models may require a process
+space of several GB of RAM.  Also, the line-by-line classification
+programs by default load the input file into memory; if you have
+extremely large input files (i.e., GBs in size), you may need to split
+them up.
+
+It is possible to train your own models; if for some reason you need
+this functionality and you can't figure this out and need help, just
+contact me.
+
+On the HLTCOE computing grid I submit jobs like this:
+  qsub -b Y -cwd -V -l mem_free=10G -l h_vmem=10G -l h_rt=24:0:0 python coelid.py classify demo/bib.txt 4 pmodels/ True "ALL"
+
+(b) programmatically
+
+Build a LidClassifier object like this:
+  classifier = LidClassifier(4, normalizeTweets=True, prefix='pmodels/', langstr="ALL")
+  rankedlangs = classifier.classify(text)
+
+Then rankedlangs will be an ordered list of:
+  [(langcode1, score1), ..., (langcoden, scoren)]
+
+By default, random fragments are extracted from large input texts to improve efficiency
+
+# -----------------------------------------------------------------
+Sample output:
+ko      -14.4180603977  pnt     -15.4918134207  tw      -15.6211013799  @womantoluv 넹~~ 잘 들어왔어욧!!! ^^
+ja      -9.48689051239  wuu     -13.1585532766  zh      -14.782552437   @yorifujibunpei またディープな！（笑）
+en      -3.50240700548  id      -4.04900502637  vi      -4.07236109617  @Culturatist I believe that's their Z3 sis...cute lil sports ride :)
+fr      -3.47672197728  oc      -3.65903942161  pcd     -3.87082886476  Côte d'Ivoire: Ouattara sollicité pour désigner un nouveau gouverneur de la BCEAO http://bit.ly/eDjG94 #civ2010
+ja      -11.9245061226  ik      -12.6158140221  tw      -13.1819856933  pico_pinoを何もない部屋でひとりぼっちにしてみると≫【寂しがる→寂しがる→ぼーっとする→独り言→寂しがる→叫ぶ→泣く】 http://shindanmaker.com/79848  リアルｗｗ
+ru      -3.12516959544  uk      -3.57015917259  cv      -3.57656548058  НОВОСТИ САЙТА DOCUMENTAL.SU http://documental.su/l/54440/
+en      -3.1154351923   eml     -3.47473036199  ru      -3.50896644518  @LEMcClelland seeing as Mary Portas is a lezza I don't think you'd get very far!!
+ja      -10.0374957167  wuu     -14.2795316806  gan     -14.8734156748  堂本兄弟見てる。夏帆なまらかわいい。そんだけ！！
+id      -3.44620452307  ms      -3.74521968269  hr      -4.0560340411   Parah kejam RT @sandrasandraa: Dasar omdo @okiindocki
+
+
+-----------------------------------------------------------------
+# Java specifics
+
+The Java port is meant to be a functional equivalent of the original
+Python version.  You may need to add appropriate -XmsZZZg and
+-XmxZZZg flags.
+
+I compile the source with the command: javac *.java
+
+java LanguageIdentifier train pathtoenglishtrainingdata.txt 4 jmodels/ en
+java LanguageIdentifier classify demo/bib.txt 4 jmodels/ True "en:es:fr"
+java LanguageIdentifier classify demo/bib.txt 4 jmodels/ True MAJOR
+
+
+For programmatic use one should build a LanguageIdentifier object like
+below and then call the classify() method:
+  LanguageIdentifier classifier = new LanguageIdentifier(4, true, "jmodels/", "all");
+  ArrayList<ScoredLang> rankedlangs = classifier.classify(text);
+
+As with the python version, random fragments are (deterministically)
+extracted from large input texts to improve efficiency.
+
+# -----------------------------------------------------------------
+Short bibliography of compression language models used in NLP:
+
+Bendetto et al., 'Language Trees and Zipping'
+(used for author ID and language ID)
+ http://www.ccs.neu.edu/home/jaa/CSG195.08F/Topics/Papers/BenedettoCaLo.pdf
+
+Pavelec et al, 'Author Identification Using Compression Models':
+ http://www.cvc.uab.es/icdar2009/papers/3725a936.pdf
+
+Bratko et al, 'Spam Filtering Using Statistical Data Compression Models':
+ http://jmlr.csail.mit.edu/papers/volume7/bratko06a/bratko06a.pdf
+
+A talk by Gord Cormack:
+ http://plg.uwaterloo.ca/~gvcormac/cormack-nato.pdf
+
+Frank et al., 'Text categorization using compression models'
+ http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.148.9031
+
+Teahan, 'Text classification and segmentation using minimum cross-entropy'
+ http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.25.8114
+
+Marton et al, 'On compression based text classification'
+ http://www.umiacs.umd.edu/~ymarton/pub/ecir05/final.pdf
+
+ 
+Papers about the Prediction by Partial Matching (PPM) algorithm:
+
+Cleary and Witten, "Data Compression Using Adaptive Coding and Partial String Matching", IEEE Trans on Comms, 32(4), 1984.
+
+Alistair Moffat, 'Implementing the PPM Data Compression Scheme', IEEE
+Trans. on Comms, 38(11), 1990.
