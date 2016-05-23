@@ -9,7 +9,7 @@ from thrift.transport import TTransport
 from thrift.protocol import TCompactProtocol
 from thrift.server import TServer
 
-from invalid import languages, model, utils
+from valid import languages, model, utils
 
 from glob import glob
 import os.path
@@ -17,17 +17,19 @@ import re
 import time
 import uuid
 import logging
+import pickle
 
 class CommunicationHandler():
     def __init__(self, model_path):
-        self.classifier = model.LidClassifier(model_path)
+        with open(model_path) as ifd:
+            self.classifier = pickle.load(ifd) #model.LidClassifier(model_path)
         #self.classifier = model.LidClassifier(code_lookup=languages.MAP_2_TO_3)
         #for fname in glob(os.path.join(model_path, "*.mod")):
         #    lang, order = re.match(r"^(.*)\.(\d+)\.mod$", os.path.basename(fname)).groups()
         #    self.classifier.add(lang, fname)
         #    logging.info("loaded model for %s", lang)
     def getDocumentation(self):
-        return "Annotation server for invalid LID system"
+        return "Annotation server for VaLID system"
     def annotate(self, communication):
         text = communication.text
         scores = self.classifier.classify(text)
@@ -36,7 +38,7 @@ class CommunicationHandler():
         aug = augf.create()
         lid = LanguageIdentification(uuid=aug.next(),
                                      languageToProbabilityMap=scores,
-                                     metadata=AnnotationMetadata(tool="invalid", timestamp=int(time.time()), kBest=1),
+                                     metadata=AnnotationMetadata(tool="valid", timestamp=int(time.time()), kBest=1),
         )
         communication.lidList.append(lid)
         return communication

@@ -41,7 +41,7 @@ if __name__ == "__main__":
         else:
             augf = AnalyticUUIDGeneratorFactory()
             aug = augf.create()
-            c = Communication(id="", text=s, uuid=aug.next(), type="tweet", metadata=AnnotationMetadata(timestamp=0, tool="stdin"))
+            c = Communication(id="", text=s, uuid=aug.next(), type="tweet", metadata=AnnotationMetadata(timestamp=0, tool="stdin"), lidList=[])
 
             new_c = client.annotate(c)
             print new_c
