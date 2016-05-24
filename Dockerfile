@@ -1,5 +1,5 @@
 FROM centos
-ENV thrift_version=0.9.1 concrete_version=master
+ENV thrift_version=0.9.1 concrete_version=master MODEL_FILE=models.pkl.gz
 MAINTAINER Tom Lippincott <tom.lippincott@gmail.com>
 LABEL Description="Base image with Thrift, Concrete, and Python Concrete"
 
@@ -8,7 +8,8 @@ WORKDIR /tmp
 RUN yum install -y git libtool make boost zlib-devel gcc-c++ byacc flex python-devel && \
     yum install -y epel-release && \
     yum update -y && \
-    yum install -y python-pip patch python-ipython
+    yum install -y python-pip patch python-ipython && \
+    yum clean all -y
 
 RUN groupadd -r dockeruser && \
     useradd -r -m -g dockeruser dockeruser && \
@@ -49,4 +50,4 @@ EXPOSE 9000
 
 VOLUME /models
 
-CMD python VaLID/scripts/concrete_annotator_server.py -p 9000 -m /models/model
+CMD python VaLID/scripts/concrete_annotator_server.py -p 9000 -m /models/${MODEL_FILE}

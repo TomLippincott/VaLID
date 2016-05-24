@@ -1,4 +1,3 @@
-from . import languages
 from . import utils
 import pickle
 import math
@@ -157,4 +156,5 @@ class LidClassifier(object):
                 mscore = (mscore / tlen)
                 scoresum += mscore
             langscores[l] = mscore
+        print langscores
         return langscores

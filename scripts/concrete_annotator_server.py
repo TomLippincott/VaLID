@@ -18,22 +18,20 @@ import time
 import uuid
 import logging
 import pickle
+import math
+import gzip
 
 class CommunicationHandler():
     def __init__(self, model_path):
-        with open(model_path) as ifd:
-            self.classifier = pickle.load(ifd) #model.LidClassifier(model_path)
-        #self.classifier = model.LidClassifier(code_lookup=languages.MAP_2_TO_3)
-        #for fname in glob(os.path.join(model_path, "*.mod")):
-        #    lang, order = re.match(r"^(.*)\.(\d+)\.mod$", os.path.basename(fname)).groups()
-        #    self.classifier.add(lang, fname)
-        #    logging.info("loaded model for %s", lang)
+        with gzip.open(model_path) as ifd:
+            self.classifier = pickle.load(ifd)
     def getDocumentation(self):
         return "Annotation server for VaLID system"
     def annotate(self, communication):
         text = communication.text
-        scores = self.classifier.classify(text)
-        print scores
+        scores = {k : math.exp(v) for k, v in self.classifier.classify(text).iteritems()}
+        total = sum(scores.values())
+        scores = {k : v / total for k, v in scores.iteritems()}
         augf = AnalyticUUIDGeneratorFactory(communication)
         aug = augf.create()
         lid = LanguageIdentification(uuid=aug.next(),
