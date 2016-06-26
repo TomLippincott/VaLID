@@ -1,5 +1,5 @@
 FROM centos
-ENV thrift_version=0.9.1 concrete_version=master MODEL_FILE=models.pkl.gz
+ENV thrift_version=0.9.3 concrete_version=master MODEL_FILE=models.pkl.gz
 MAINTAINER Tom Lippincott <tom.lippincott@gmail.com>
 LABEL Description="Base image with Thrift, Concrete, and Python Concrete"
 
