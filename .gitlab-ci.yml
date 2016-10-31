@@ -1,9 +1,6 @@
-services:
-  - docker
-
 before_script:
   - docker info
-
-script:
-  - docker ps
+build-test-deploy:
+  script:
+    - docker ps
   
