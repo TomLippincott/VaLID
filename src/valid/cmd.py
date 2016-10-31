@@ -1,4 +1,5 @@
 import argparse
+import pickle
 from glob import glob
 from . import model, languages, utils    
 
@@ -16,12 +17,10 @@ if __name__ == "__main__":
     if options.action == "train":
         for i in range(len(options.inputs) / 2):
             c = model.Compressor(options.n)
-            c.train(options.input)
-            c.save(fname=options.output)
+            c.train(options.inputs[i * 2])
+            m.add(c, options.inputs[(i * 2) + 1])
+        with open(options.output, "w") as ofd:
+            pickle.dump(m, ofd)
     elif options.action == "test":
         pass
-    #for file_name in glob(os.path.join(options.input, "*")):
-    #        c = model.Compressor(options.n)
-    #        c.load(file_name)
-    #        m.add(file_name, c)
         

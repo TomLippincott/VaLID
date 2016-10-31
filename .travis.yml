@@ -1,0 +1,9 @@
+services:
+  - docker
+
+before_script:
+  - docker info
+
+script:
+  - docker ps
+  

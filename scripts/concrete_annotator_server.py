@@ -9,7 +9,8 @@ from thrift.transport import TTransport
 from thrift.protocol import TCompactProtocol
 from thrift.server import TServer, TNonblockingServer
 
-from valid import languages, model, utils
+from valid import model, utils
+from pycountry import languages
 
 from glob import glob
 import os.path
@@ -28,15 +29,17 @@ class CommunicationHandler():
     def getDocumentation(self):
         return "Annotation server for VaLID system"
     def annotate(self, communication):
-        text = communication.text
-        scores = {k : math.exp(v) for k, v in self.classifier.classify(text).iteritems()}
-        total = sum(scores.values())
-        scores = {k : v / total for k, v in scores.iteritems()}
+        text = ""
+        for section in communication.sectionList:
+            if section.kind == "content":
+                text += communication.text[section.textSpan.start:section.textSpan.ending]
+        scores = {languages.get(iso639_1_code=k).iso639_3_code : math.exp(v) for k, v in self.classifier.classify(text).iteritems()}
+        logging.info(str(scores))
         augf = AnalyticUUIDGeneratorFactory(communication)
         aug = augf.create()
         lid = LanguageIdentification(uuid=aug.next(),
                                      languageToProbabilityMap=scores,
-                                     metadata=AnnotationMetadata(tool="valid", timestamp=int(time.time()), kBest=1),
+                                     metadata=AnnotationMetadata(tool="valid", timestamp=int(time.time()), kBest=len(scores)),
         )
         communication.lidList.append(lid)
         return communication
@@ -50,7 +53,7 @@ if __name__ == "__main__":
     parser.add_argument("-m", "--model_path", dest="model_path")
     options = parser.parse_args()
 
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.ERROR)
     
     handler = CommunicationHandler(options.model_path)
     processor = Annotator.Processor(handler)
