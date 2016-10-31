@@ -4,7 +4,7 @@ before_script:
   - docker info
 build-test-deploy:
   script:
-    - docker ps
+    - ls
   tags:
     - shell
     
