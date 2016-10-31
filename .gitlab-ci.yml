@@ -4,7 +4,8 @@ before_script:
   - docker info
 build-test-deploy:
   script:
-    - ls
+    - pip install iso639 pycountry
+    - pip install .
   tags:
     - shell
     
