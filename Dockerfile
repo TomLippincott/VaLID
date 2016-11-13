@@ -1,4 +1,4 @@
-FROM hltcoe/centos:7
+FROM hltcoe/concrete:latest
 ENV MODEL_FILE=models.pkl.gz
 MAINTAINER Tom Lippincott <tom.lippincott@gmail.com>
 LABEL Description="VaLID annotation server"
