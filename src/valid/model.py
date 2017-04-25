@@ -4,42 +4,16 @@ import math
 import logging
 import io
 
-class Compressor:
+class Compressor():
 
-    def __init__(self, language_code, order):
+    def __init__(self, order, alphabet_size=256):
         """
         """
-        self.language_code = language_code
         self.order = order
-        #self.stage = []
         self.counts = {}
         self.tcounts = {}
-        #self.history = []
+        self.alphabet_size = alphabet_size
         
-    # def save(self, fname=None, pick=True):
-    #     """
-    #     """
-    #     if fname is None:
-    #         fname = self.name + '.mod'
-    #     self.stage = []
-    #     with open(fname, "wb") as ofd:
-    #         if pick:
-    #             pickle.dump(self, ofd)
-    #         else:
-    #             marshal.dump(self.name, ofd)
-    #             marshal.dump(self.order, ofd)
-    #             marshal.dump(self.stage, ofd)
-    #             marshal.dump(self.counts, ofd)
-    #             marshal.dump(self.tcounts, ofd)
-
-    # def load(self, file_name=None):
-    #     """
-    #     """
-    #     with open(file_name, "rb") as ifd:
-    #         x = Compressor(0)
-    #         x = pickle.load(ifd)
-    #     return x
-
     def prune(self, limit=2000000):
         """
         Prune tables by halving-counts and removing any singletons.
@@ -49,52 +23,36 @@ class Compressor:
             self.tcounts = utils.remove_zeros(utils.halve(self.tcounts))
             self.counts = utils.remove_zeros(utils.halve(self.counts))
 
-    def merge(self, file_name):
-        """
-        Merge counts of other (i.e., really partial) model (supports building via map reduce)
-        """
-        with open(file_name, 'rb') as ifd:
-            othermod = pickle.load(ifd)
-        self.counts = utils.merge_maps(self.counts, othermod.counts)
-        self.tcounts = utils.merge_maps(self.tcounts, othermod.tcounts)
+    def merge(self, other):
+       """
+       Merge counts of other (i.e., really partial) model (supports building via map reduce)
+       """
+       self.counts = utils.merge_maps(self.counts, other.counts)
+       self.tcounts = utils.merge_maps(self.tcounts, other.tcounts)
        
-    def train(self, file_name):
-        """
-        """
-        with io.open(file_name, encoding="utf-8") as ifd:
-            for document in ifd:
-                self.add(document)
-
-    def test(self, file_name):
-        """
-        Return log odds.
-        """
-        with io.open(file_name, encoding="utf-8") as ifd:
-            return sum([self.score(line) for line in ifd])
-
-    def add(self, document):
+    def add(self, sequence):
         """        
         """
         history = []
-        for c in document:
+        for c in sequence:
             history.append(c)
             for j in range(0, self.order+1):
                 if j < len(history):
                     x = history[len(history)-j:]
-                    q = ''.join(x)
+                    q = tuple(x)
                     self.counts[q] = self.counts.get(q, 0) + 1
-                    q = ''.join(x[0:len(x)-1])
+                    q = tuple(x[0:len(x)-1])
                     self.tcounts[q] = self.tcounts.get(q, 0) + 1
             if len(history) > self.order:
                 history = history[1:]
 
-    def score(self, document):
+    def apply(self, sequence):
         """
-        Score a document based on the current state of the n-gram counts.
+        Score a sequence based on the current state of the n-gram counts.
         """
         history = []
         score = 0
-        for c in document:
+        for c in sequence:
             history.append(c)
             # look at contexts from longest to shortest
             didfind=False
@@ -109,52 +67,49 @@ class Compressor:
                     didfind=True
                 else:
                     # didn't ever see this char in *this context* before, else wouldn't make it here
-                    q = ''.join(x[0:len(x)-1])
+                    q = tuple(x[0:len(x)-1])
                     if q in self.tcounts:
                         denom = self.tcounts[q]
                         score += math.log(float(1) / (1+denom)) # emit escape prob
                     else:
                         score += math.log(float(1) / (1+1)) # emit escape prob (happens because not adapting while scoring)
             if not didfind:
-                score += math.log(float(1) / 256) # who knowz what the coding alphabet size is...
+                score += math.log(1.0 / self.alphabet_size) # who knowz what the coding alphabet size is...
             if len(history) > self.order:
                 history = history[1:]
         return score
 
 
-class LidClassifier(object):
+class Classifier(object):
 
-    def __init__(self, code_lookup={}, preprocess=None):
+    def __init__(self, order):
         """
         """
-        self.models = {}
+        self.order = order
         self.compressors = {}
-        self.preprocess = preprocess
-        self.code_lookup = code_lookup
 
-    def add(self, compressor, language_code=None):
-        """
-        """
-        #code = 
-        self.compressors[language_code if language_code else compressor.language_code] = compressor
-        #pass
-        #with open(file_name, 'rb') as ifd:
-        #    self.models[language_id] = pickle.load(ifd)
+    def train(self, label, sequence):
+        self.compressors[label] = self.compressors.get(label, Compressor(self.order))
+        self.compressors[label].add(sequence)
         
-    def classify(self, document):
+    def classify(self, sequence):
         """
         Given a tweet, return a map from language code to probability.
         """
-        if self.preprocess:
-            document = self.preprocess(document)
-        tlen = len(document)
+        tlen = len(sequence)
         scoresum = 0
         langscores = {}
         for l, c in self.compressors.iteritems():
-            mscore = c.score(document)
+            mscore = c.score(sequence)
             if tlen != 0:
                 mscore = (mscore / tlen)
                 scoresum += mscore
             langscores[l] = mscore
-        print langscores
         return langscores
+
+    def merge(self, other):
+        for l, c in other.compressors.iteritems():
+            if l not in self.compressors:
+                self.compressors[l] = c
+            else:
+                self.compressors[l].merge(c)

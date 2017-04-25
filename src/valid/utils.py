@@ -1,12 +1,11 @@
 from . import languages
-#from . import model
 import re
 import io
 import logging
 
 def normalizeTweet(s):
     tw = re.sub(r"\s+", " ", s.lower())
-    tw = re.sub(r"(@|https?//)[^\s]+", "", tw)
+    tw = re.sub(r"(@|https?://)[^\s]+", "", tw)
     return tw.strip()
 
 def remove_zeros(m):
@@ -28,27 +27,3 @@ def merge_maps(map_A, map_B, combinator=lambda x, y : x + y):
     for k, v in map_B.iteritems():
         map_A[k] = combinator(v, map_A[k]) if k in map_A else v
     return map_A
-
-
-# def slurp(fname, encoding='utf-8'):
-#     with io.open(fname, 'r', encoding=encoding, newline='\n') as ifd:
-#         return [l for l in ifd]
-
-# def getModel(filename, order, prefix, lang, maxsize=0):
-#     m = model.Compressor(order, name='%s' % lang)
-#     modelfile = os.path.join(prefix, m.name + '.' + str(m.order) + '.mod')
-#     if os.path.exists(modelfile):
-#         m = m.load(fname=modelfile, pick=True) # False
-#     else:
-#         if os.path.exists(filename):
-#             m.train('%s' % filename)
-#             if maxsize > 0:
-#                 m.prune(limit=maxsize)
-#             m.save(fname=modelfile, pick=True) # False
-#         else:
-#             print >>sys.stderr, ('Warning: unable to load model %s '
-#                                  '(looked in %r)' % (m.name, modelfile))
-#             return None
-#         #print "Trained model: %s" % model.name
-#         #sys.stdout.flush()
-#     return m

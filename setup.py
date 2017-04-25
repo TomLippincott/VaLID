@@ -13,5 +13,5 @@ setup(name="VaLID",
       packages=["valid"],
       package_dir={"valid" : "src/valid"},
       scripts=["scripts/concrete_annotator_server.py", "scripts/concrete_annotator_client.py"],
-      install_requires=[],
+      install_requires=["concrete", "iso639"],
      )

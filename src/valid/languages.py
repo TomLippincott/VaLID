@@ -1,4 +1,5 @@
 import iso639
+import logging
 
 # all languages
 ALL_LANGUAGES = "ab:ace:af:ak:als:am:an:ang:ar:arc:arz:as:ast:av:ay:az:ba:bar:bcl:be:bg:bh:bi:bjn:bm:bn:bo:bpy:br:bs:bug:bxr:ca:cdo:ce:ceb:ch:chr:chy:ckb:co:cr:crh:cs:csb:cu:cv:cy:da:de:diq:dsb:dv:dz:ee:el:eml:en:eo:es:et:eu:ext:fa:ff:fi:fj:fo:fr:frp:frr:fur:fy:ga:gag:gan:gd:gl:glk:gn:got:gu:gv:ha:hak:haw:he:hi:hif:hr:hsb:ht:hu:hy:ia:id:ie:ig:ik:ilo:io:is:it:iu:ja:jbo:jv:ka:kaa:kab:kbd:kg:ki:kk:kl:km:kn:ko:koi:krc:ks:ku:kv:kw:ky:la:lad:lb:lbe:lez:lg:li:lij:lmo:ln:lo:lt:ltg:lv:mdf:mg:mhr:mi:mk:ml:mn:mo:mr:mrj:ms:mt:mwl:my:myv:mzn:na:nah:nap:nds:ne:new:nl:nn:no:nov:nso:nv:ny:oc:om:or:os:pa:pag:pam:pap:pcd:pdc:pfl:pi:pih:pl:pms:pnb:pnt:ps:pt:qu:rm:rmy:rn:ro:ru:rue:rw:sa:sah:sc:scn:sco:sd:se:sg:sh:si:sk:sl:sm:sn:so:sq:sr:srn:ss:st:stq:su:sv:sw:szl:ta:te:tet:tg:th:ti:tk:tl:tn:to:tpi:tr:ts:tt:tum:tw:ty:udm:ug:uk:ur:uz:ve:vec:vep:vi:vls:vo:wa:war:wo:wuu:xal:xh:xmf:yi:yo:za:zea:zh:zu".split(":")
@@ -11,7 +12,7 @@ MAP_2_TO_3 = {}
 for lang in ALL_LANGUAGES:
     record = iso639.find(lang)
     if len(lang) not in [2, 3]:
-        print lang
+        logging.warn("Language code %s is not of length 2 or 3", lang)
     elif lang == "mo":
         # special case to map Moldovan to Romanian
         MAP_2_TO_3[lang] = "ron"
