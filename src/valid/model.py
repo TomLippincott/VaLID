@@ -58,10 +58,12 @@ class Compressor():
             didfind=False
             for j in range(self.order+1, -1, -1):
                 x = history[len(history)-j:]
-                q = ''.join(x)
+                q = tuple(x)
+                #q = ''.join(x)
                 if q in self.counts:
                     cnt = self.counts[q]
-                    q = ''.join(x[0:len(x)-1])
+                    #q = ''.join(x[0:len(x)-1])
+                    q = tuple(x[0:len(x)-1])
                     denom = self.tcounts[q]
                     score += math.log(float(cnt) / (1+denom))
                     didfind=True
@@ -94,18 +96,18 @@ class Classifier(object):
         
     def classify(self, sequence):
         """
-        Given a tweet, return a map from language code to probability.
+        Given a sequence, return a map from label to log-probability.
         """
         tlen = len(sequence)
         scoresum = 0
-        langscores = {}
+        scores = {}
         for l, c in self.compressors.iteritems():
-            mscore = c.score(sequence)
+            mscore = c.apply(sequence)
             if tlen != 0:
                 mscore = (mscore / tlen)
                 scoresum += mscore
-            langscores[l] = mscore
-        return langscores
+            scores[l] = mscore
+        return scores
 
     def merge(self, other):
         for l, c in other.compressors.iteritems():
