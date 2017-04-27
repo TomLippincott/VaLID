@@ -12,6 +12,6 @@ setup(name="VaLID",
       maintainer_email="tom.lippincott@gmail.com",
       packages=["valid"],
       package_dir={"valid" : "src/valid"},
-      scripts=["scripts/concrete_annotator_server.py", "scripts/concrete_annotator_client.py"],
+      scripts=["scripts/concrete_annotator_server.py", "scripts/concrete_annotator_client.py", "scripts/convert_invalid_to_valid.py"],
       install_requires=["concrete", "iso639"],
      )
