@@ -4,9 +4,10 @@ import math
 import logging
 import io
 
-class Compressor():
 
-    def __init__(self, order, alphabet_size=256):
+class Compressor(object):
+
+    def __init__(self, order, alphabet_size):
         """
         """
         self.order = order
@@ -14,14 +15,15 @@ class Compressor():
         self.tcounts = {}
         self.alphabet_size = alphabet_size
         
-    def prune(self, limit=2000000):
+    def prune(self, limit=None):
         """
         Prune tables by halving-counts and removing any singletons.
         While total number of keys > limit, halve counts, and then remove zeros.
         """
-        while len(self.counts) + len(self.tcounts) > limit:
-            self.tcounts = utils.remove_zeros(utils.halve(self.tcounts))
-            self.counts = utils.remove_zeros(utils.halve(self.counts))
+        if limit:
+            while len(self.counts) + len(self.tcounts) > limit:
+                self.tcounts = utils.remove_zeros(utils.halve(self.tcounts))
+                self.counts = utils.remove_zeros(utils.halve(self.counts))
 
     def merge(self, other):
        """
@@ -33,6 +35,7 @@ class Compressor():
     def add(self, sequence):
         """        
         """
+
         history = []
         for c in sequence:
             history.append(c)
@@ -84,33 +87,39 @@ class Compressor():
 
 class Classifier(object):
 
-    def __init__(self, order):
+    def __init__(self, order=3, alphabet_size=256):
         """
         """
         self.order = order
         self.compressors = {}
-
+        self.alphabet_size = alphabet_size
+                
     def train(self, label, sequence):
-        self.compressors[label] = self.compressors.get(label, Compressor(self.order))
+        self.compressors[label] = self.compressors.get(label, Compressor(self.order, self.alphabet_size))
         self.compressors[label].add(sequence)
         
-    def classify(self, sequence):
+    def predict(self, sequence):
         """
         Given a sequence, return a map from label to log-probability.
         """
         tlen = len(sequence)
         scoresum = 0
         scores = {}
-        for l, c in self.compressors.iteritems():
+        for l, c in self.compressors.items():
             mscore = c.apply(sequence)
-            if tlen != 0:
-                mscore = (mscore / tlen)
-                scoresum += mscore
+            #if tlen != 0:
+            #    mscore = (mscore / tlen)
+            #    scoresum += mscore
             scores[l] = mscore
         return scores
+    
+    def classify(self, sequence):
+        probs = self.predict(sequence)
+        best = sorted(probs.items(), key=lambda x : x[1], reverse=True)[0][0]
+        return best
 
     def merge(self, other):
-        for l, c in other.compressors.iteritems():
+        for l, c in other.compressors.items():
             if l not in self.compressors:
                 self.compressors[l] = c
             else:

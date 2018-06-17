@@ -2,7 +2,7 @@ import argparse
 import pickle
 import gzip
 from glob import glob
-from model import Classifier    
+from . import model
 
 if __name__ == "__main__":
 
@@ -27,14 +27,14 @@ if __name__ == "__main__":
             with open(fname) as ifd:
                 for line in ifd:
                     probs = model.classify(line)
-                    guess = max(probs.iteritems(), key=lambda x : x[1])[0]
+                    guess = max(probs.items(), key=lambda x : x[1])[0]
                     total += 1
                     if label == guess:
                         correct += 1
         print("Accuracy: {}".format(float(correct) / total))
     else:
         # train
-        model = Classifier(options.n)
+        model = model.Classifier(options.n)
         for i in range(len(options.inputs) / 2):
             label = options.inputs[i * 2]
             fname = options.inputs[(i * 2) + 1]

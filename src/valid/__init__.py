@@ -1,4 +1,4 @@
-import cmd
-import languages
-import utils
-import model
+from . import cmd
+from . import languages
+from . import utils
+from . import model

@@ -6,7 +6,19 @@ for arbitrary tasks assigning discrete labels to sequences.
 Output scores are log prob values representing the likelihood 
 of a model on an average character basis. 
 
+The Classifier class is compliant with Scikit-learn's API.
+
 ## Quick start
+
+Install via pip:
+
+```bash
+# from source
+pip install . --user
+
+# from pypi
+pip install valid --user
+```
 
 Training a classification model is very simple.  Assuming you 
 have sequences of hashable values (e.g. characters) associated
@@ -15,7 +27,7 @@ with labels:
 ```python
 from valid.model import Classifier
 
-c = Classifier(order=4)
+c = Classifier()
 for text in englishtexts:
 	c.train("eng", text)
 for text in spanish_texts:
@@ -25,7 +37,7 @@ for text in spanish_texts:
 You can then apply the model to new data points:
 
 ```python
->>> print c.classify("Some English text")
+>>> print c.predict("Some English text")
 {"eng" : -0.1, "spa" : -0.00002}
 ```
 
@@ -48,6 +60,13 @@ import pickle
 with gzip.open(model_file) as ifd:
 	c = pickle.load(ifd)
 ```
+
+See `scripts/valid_example.py` for a full, but still very simple, 
+example that reads lines of tab-separated label/text from STDIN, 
+sweeps n-gram values from 1 to 5 to find the best byte-based, 
+character-based, and word-based models, and writes them to disk.
+Experiments with ~70k tweets consistently show the 3-gram byte 
+model to be optimal.
 
 ## LID and Tweet functionality
 
