@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name="VaLID",
-      version="1.0.3",
+      version="1.0.4",
       description="A language identification system based on prediction by partial matching (PPM) compression",
       author="Paul McNamee",
       author_email="paul.mcnamee@jhuapl.edu",
