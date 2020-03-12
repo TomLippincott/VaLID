@@ -3,8 +3,9 @@
 from distutils.core import setup
 
 setup(name="VaLID",
-      version="1.0.4",
+      version="1.0.6",
       description="A language identification system based on prediction by partial matching (PPM) compression",
+      long_description="VaLID models are essentially character n-gram models with a particular choice of back-off and periodic scaling of counts to prune very rare values.",
       author="Paul McNamee",
       author_email="paul.mcnamee@jhuapl.edu",
       url="http://www.hltcoe.jhu.edu",

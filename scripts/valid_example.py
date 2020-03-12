@@ -6,7 +6,7 @@ import re
 import pickle
 import gzip
 import logging
-
+from sklearn.metrics import f1_score
 
 if __name__ == "__main__":
 
@@ -33,6 +33,7 @@ if __name__ == "__main__":
 
     logging.info("Shuffling data and creating train/dev/test split...")
     random.shuffle(instances)
+    instances = instances[0:5000]
     train = [i for i in instances[:int(.8 * len(instances))]]
     dev = [i for i in instances[int(.8 * len(instances)):int(.9 * len(instances))]]
     test = [i for i in instances[int(.9 * len(instances)):]]
@@ -42,32 +43,41 @@ if __name__ == "__main__":
             train_alphabet.add(v)
             
     best_model, best_score, best_n = None, 0.0, 0
-    for n in range(1, 6):
+    for n in range(1, 3):
         logging.info("Training %d-gram model on train set...", n)
         model = Classifier(order=n, alphabet_size=len(train_alphabet))
-        for i in train:
-            model.train(i["label"], i["sequence"])
+        model.fit([i["sequence"] for i in train], [i["label"] for i in train])
+        #for i in train:
+        #    model.train(i["label"], i["sequence"])
         logging.info("Applying %d-gram model to dev set...", n)
         correct = 0
-        for i in dev:
-            guess = model.classify(i["sequence"])
-            if guess == i["label"]:
-                correct += 1
-        acc = correct / len(dev)
-        logging.info("%d-gram dev accuracy: %f", n, acc)
-        if acc > best_score or best_model == None:
-            best_score = acc
+        guesses = model.predict([i["sequence"] for i in dev])
+        labels = [i["label"] for i in dev]
+        #for i in dev:
+        #    guess = model.classify(i["sequence"])
+        #    if guess == i["label"]:
+        #        correct += 1
+        score = f1_score(labels, guesses, average="macro")
+        #len([a == b for a, b in zip(guesses, labels)]) / len(dev)
+        logging.info("%d-gram dev score: %f", n, score)
+        if score > best_score or best_model == None:
+            best_score = score
             best_model = model
             best_n = n
     
     logging.info("Applying best model (%d-gram) to test set...", best_n)
-    correct = 0.0
-    for i in test:
-        guess = best_model.classify(i["sequence"])
-        if guess == i["label"]:
-            correct += 1
-    acc = correct / len(test)
-    logging.info("%d-gram test accuracy: %.3f", best_n, acc)
+    #correct = 0.0
+    #for i in test:
+    #    guess = best_model.classify(i["sequence"])
+    #    if guess == i["label"]:
+    #        correct += 1
+
+    guesses = model.predict([i["sequence"] for i in dev])
+    labels = [i["label"] for i in dev]
+    score = f1_score(labels, guesses, average="macro")
+    #acc = len([a == b for a, b in zip(guesses, labels)]) / len(dev)            
+    #acc = correct / len(test)
+    logging.info("%d-gram test accuracy: %.3f", best_n, score)
     
     if args.output:
         logging.info("Saving best model (%d-gram) to %s", best_n, args.output)
