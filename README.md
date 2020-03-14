@@ -81,9 +81,9 @@ There are three lookup tables in `valid.languages`:
 
 ## Further reading
 
-If you use this code in published work please cite the following paper:
+If you use this code in published work please cite the following [paper](https://www.aclweb.org/anthology/W12-2108/):
 
-http://aclweb.org/anthology-new/W/W12/W12-2108.pdf
+https://www.aclweb.org/anthology/W12-2108.pdf
 
 Short bibliography of compression language models used in NLP:
 
