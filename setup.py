@@ -14,5 +14,5 @@ setup(name="VaLID",
       packages=["valid"],
       package_dir={"valid" : "src/valid"},
       scripts=["scripts/concrete_annotator_server.py", "scripts/concrete_annotator_client.py", "scripts/convert_invalid_to_valid.py", "scripts/valid_example.py"],
-      install_requires=["iso639"],
+      install_requires=["iso639", "numpy", "sklearn"],
      )
