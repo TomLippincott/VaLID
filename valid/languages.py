@@ -8,23 +8,23 @@ ALL_LANGUAGES = "ab:ace:af:ak:als:am:an:ang:ar:arc:arz:as:ast:av:ay:az:ba:bar:bc
 MAJOR_LANGUAGES = "ar:as:az:be:bg:bn:ca:cs:da:de:el:en:es:et:fa:fi:fr:gu:ha:he:hi:hr:hu:id:it:ja:kn:ko:ks:ky:lt:lv:mk:ml:mr:mt:my:ne:nl:no:or:pa:pl:ps:pt:rn:ro:ru:si:sk:sl:so:sq:sr:sv:sw:ta:te:th:tr:uk:ur:uz:vi:zh".split(":")
 
 # construct mapping from old 2-character IDs to new 3-character IDs
-MAP_2_TO_3 = {}
-for lang in ALL_LANGUAGES:
-    record = iso639.find(lang)
-    if len(lang) not in [2, 3]:
-        logging.warn("Language code %s is not of length 2 or 3", lang)
-    elif lang == "mo":
-        # special case to map Moldovan to Romanian
-        MAP_2_TO_3[lang] = "ron"
-    elif lang == "sh":
-        # special case to map Serbo-Croatian
-        MAP_2_TO_3[lang] = "hbs"
-    elif len(lang) == 2 and record:
-        # if it's length 2 and we have a better ID for it
-        MAP_2_TO_3[lang] = record["iso639_2_b"]
-    elif len(lang) == 3:
-        # if it's already length 3, leave it alone
-        MAP_2_TO_3[lang] = lang
-    else:
-        # if it couldn't be mapped, raise an error
-        raise Error("Couldn't find a good three-character iso639 code for original code '%s'" % (lang))
+# MAP_2_TO_3 = {}
+# for lang in ALL_LANGUAGES:
+#     record = iso639.find(lang)
+#     if len(lang) not in [2, 3]:
+#         logging.warn("Language code %s is not of length 2 or 3", lang)
+#     elif lang == "mo":
+#         # special case to map Moldovan to Romanian
+#         MAP_2_TO_3[lang] = "ron"
+#     elif lang == "sh":
+#         # special case to map Serbo-Croatian
+#         MAP_2_TO_3[lang] = "hbs"
+#     elif len(lang) == 2 and record:
+#         # if it's length 2 and we have a better ID for it
+#         MAP_2_TO_3[lang] = record["iso639_2_b"]
+#     elif len(lang) == 3:
+#         # if it's already length 3, leave it alone
+#         MAP_2_TO_3[lang] = lang
+#     else:
+#         # if it couldn't be mapped, raise an error
+#         raise Error("Couldn't find a good three-character iso639 code for original code '%s'" % (lang))
